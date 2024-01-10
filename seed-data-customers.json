@@ -1,0 +1,98 @@
+{
+  "customers" : [
+    {
+      "given_name": "Amelia",
+      "family_name": "Earhart",
+      "email_address": "Amelia.Earhart@example.com",
+      "address": {
+        "address_line_1": "500 Electric Ave",
+        "address_line_2": "Suite 600",
+        "locality": "New York",
+        "administrative_district_level_1": "NY",
+        "postal_code": "10003",
+        "country": "US"
+      },
+      "company_name": "Earhart United",
+      "phone_number": "1-212-555-4240",
+      "note": "A customer for sample app"
+    },
+    {
+      "given_name": "William",
+      "family_name": "Shakespeare",
+      "email_address": "William.Shakespeare@example.com",
+      "address": {
+        "address_line_1": "1000 Juliet Lane",
+        "address_line_2": "Unit A",
+        "locality": "Stratford",
+        "administrative_district_level_1": "Avon",
+        "postal_code": "12345",
+        "country": "GB"
+      },
+      "company_name": "King's Men",
+      "phone_number": "1-212-444-1234",
+      "note": "A customer for sample app"
+    },
+    {
+      "given_name": "Charles",
+      "family_name": "Darwin",
+      "email_address": "Charles.Darwin@example.com",
+      "address": {
+        "address_line_1": "915 Origin Street",
+        "locality": "The Mount",
+        "administrative_district_level_1": "Shrewsbury",
+        "postal_code": "10003",
+        "country": "GB"
+      },
+      "company_name": "Darwin Platform",
+      "phone_number": "011 44 01865 496 111",
+      "note": "A customer for sample app"
+    },
+    {
+      "given_name": "Abraham",
+      "family_name": "Lincoln",
+      "email_address": "Abraham.Lincoln@example.com",
+      "address": {
+        "address_line_1": "500 Electric Ave",
+        "address_line_2": "Suite 600",
+        "locality": "Sinking Spring Farm",
+        "administrative_district_level_1": "KY",
+        "postal_code": "90000",
+        "country": "US"
+      },
+      "company_name": "Lincoln Property",
+      "phone_number": "1-425-555-4321",
+      "note": "A customer for sample app"
+    },
+    {
+      "given_name": "Maya",
+      "family_name": "Angelou",
+      "email_address": "Maya.Angelou@example.com",
+      "address": {
+        "address_line_1": "11 Rose Way",
+        "locality": "St Louis",
+        "administrative_district_level_1": "MO",
+        "postal_code": "12345",
+        "country": "US"
+      },
+      "company_name": "Caged Bird Legacy",
+      "phone_number": "1-212-555-1212",
+      "note": "A customer for sample app"
+    },
+    {
+      "given_name": "Frida",
+      "family_name": "Kahlo",
+      "email_address": "Frida.Kahlo@example.com",
+      "address": {
+        "address_line_1": "7253 Surrealism Ave",
+        "address_line_2": "Suite 5",
+        "locality": "Coyoacá",
+        "administrative_district_level_1": "Mexico City",
+        "postal_code": "10003",
+        "country": "MX"
+      },
+      "company_name": "The Two Fridas",
+      "phone_number": "011 52 155 1234 5678",
+      "note": "A customer for sample app"
+    }
+  ]
+}

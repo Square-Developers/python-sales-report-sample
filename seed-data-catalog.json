@@ -1,0 +1,598 @@
+{
+  "catalog": [
+    {
+      "id": "#bakedGoods",
+      "type": "CATEGORY",
+      "category_data": {
+        "name": "Baked Goods"
+      }
+    },
+    {
+      "id": "#drinks",
+      "type": "CATEGORY",
+      "category_data": {
+        "name": "Drinks"
+      }
+    },
+    {
+      "id": "#breakfast",
+      "type": "CATEGORY",
+      "category_data": {
+        "name": "Breakfast"
+      }
+    },
+    {
+      "id": "#croissant",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "CR",
+        "name": "Croissant",
+        "category_id": "#bakedGoods",
+        "description": "Light and flaky buttery croissant",
+        "present_at_all_locations": true,
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#regularCroissant",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "2732-TME-64",
+              "name": "Regular",
+              "price_money": {
+                "amount": 375,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#croissant"
+            }
+          },
+          {
+            "id": "#chocolate",
+            "type": "ITEM_VARIATION",
+            "description": "Light and flaky buttery croissant with milk chocolate filling",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "1045-HEB-61",
+              "name": "Chocolate Croissant",
+              "price_money": {
+                "amount": 425,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#croissant"
+            }
+          },
+          {
+            "id": "#hamAndSwiss",
+            "type": "ITEM_VARIATION",
+            "description": "Light and flaky buttery croissant filled with Prosciutto Cotto Italian-style ham and melted Swiss cheese",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "9939-MNM-10",
+              "name": "Ham & Swiss Croissant",
+              "price_money": {
+                "amount": 450,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#croissant"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#coffeeCake",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "CC",
+        "name": "Coffee Cake",
+        "category_id": "#bakedGoods",
+        "description": "Fluffy & buttery coffee cake with layers of cinnamon sugar filling",
+        "present_at_all_locations": true,
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#regularCoffeeCake",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "6600-MCH-63",
+              "name": "Regular",
+              "price_money": {
+                "amount": 350,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#coffeeCake"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#pancakes",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "PA",
+        "name": "Pancakes",
+        "category_id": "#breakfast",
+        "description": "Three fluffy homemade pancakes topped with powdered sugar and served with maple syrup",
+        "present_at_all_locations": true,
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#regularPancakes",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "2382-OUC-64",
+              "name": "Regular",
+              "price_money": {
+                "amount": 799,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#pancakes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#eggsbenny",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "EB",
+        "name": "Eggs Benny",
+        "category_id": "#breakfast",
+        "description": "Two poached eggs and ham on an English muffin. Served on a toasted English Muffin and topped with our delicious home-made Hollandaise Sauce, along with grilled Red Potatoes",
+        "present_at_all_locations": true,
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#wholeWheatEggsBenny",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "6286-XKB-55",
+              "name": "Whole wheat English muffin",
+              "price_money": {
+                "amount": 1350,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#eggsbenny"
+            }
+          },
+          {
+            "id": "#whiteBreadEggsBenny",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "5808-EKZ-30",
+              "name": "White English muffin",
+              "price_money": {
+                "amount": 1350,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#eggsbenny"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#frenchtoast",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "FT",
+        "name": "French toast",
+        "category_id": "#breakfast",
+        "description": "Three slices of thick french toast served hot with butter, powdered sugar, maple syrup.",
+        "present_at_all_locations": true,
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#regular",
+            "description": "Regular Brioche French toast with berries, powdered sugar & maple syrup",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "6943-MVE-52",
+              "name": "Regular French toast",
+              "price_money": {
+                "amount": 999,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#frenchtoast"
+            }
+          },
+          {
+            "id": "#coconut",
+            "description": "Coconut cream stuffed french toast with brûléed pineapple, crushed macadamia nuts and lemon curb",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "4142-AGK-45",
+              "name": "Coconut Cream French toast",
+              "price_money": {
+                "amount": 1300,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#frenchtoast"
+            }
+          },
+          {
+            "id": "#nutella",
+            "description": "Thick slices of Sourdough French Toast topped with fresh strawberries and creamy Nutella",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "9690-DAB-54",
+              "name": "Nutella & Strawberries French toast",
+              "price_money": {
+                "amount": 1250,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#frenchtoast"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#muffin",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "MUFF",
+        "name": "Muffin",
+        "category_id": "#bakedGoods",
+        "description": "Plump homemade muffins",
+        "present_at_all_locations": true,
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#regularMuffin",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "3680-TNQ-62",
+              "name": "Plain muffin",
+              "description": "Simple ol'fashioned muffin yet super soft and buttery",
+              "price_money": {
+                "amount": 225,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#blueberry",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "8623-MWA-68",
+              "name": "Blueberry",
+              "description": "Made with fresh blueberries and topped with a sugary-cinnamon crumb topping",
+              "price_money": {
+                "amount": 300,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#appleCinnamon",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "4494-REY-10",
+              "name": "Apple Cinnamon",
+              "description": "Scrumptious and full of warm cinnamon and crisp apple bits and finished with a cinnamon sugar topping",
+              "price_money": {
+                "amount": 325,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#chocolateChip",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "3442-SCU-31",
+              "name": "Chocolate Chip",
+              "description": "Full of chocolate chips and soft and buttery",
+              "price_money": {
+                "amount": 250,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#bananaNut",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "5491-BBC-78",
+              "name": "Banana Nut",
+              "description": "Light and moist, full of toasted walnuts, and just sweet enough with a touch of cinnamon",
+              "price_money": {
+                "amount": 300,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#carrot",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "5434-OYR-65",
+              "name": "Carrot with Walnuts",
+              "description": "Hearty muffins packed with grated carrots, walnuts and raisins",
+              "price_money": {
+                "amount": 300,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#raisin",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "5474-HUI-91",
+              "name": "Raisin Bran",
+              "description": "Hearty and low fat packed with Raisin bran cereal",
+              "price_money": {
+                "amount": 225,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          },
+          {
+            "id": "#doubleChocolate",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "name": "Double Chocolate Chip",
+              "sku": "7745-LEQ-27",
+              "description": "Very rich and mega chocolate-y loaded with chocolate chips in every bite",
+              "price_money": {
+                "amount": 275,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#muffin"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#coffee",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "Co",
+        "name": "Coffee",
+        "category_id": "#drinks",
+        "description": "Coffee Drink",
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#smallCoffee",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "8475-ICT-94",
+              "name": "Small",
+              "description": "10 oz coffee",
+              "price_money": {
+                "amount": 159,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#coffee"
+            }
+          },
+          {
+            "id": "#mediumCoffee",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "9922-XJK-19",
+              "name": "Medium",
+              "description": "14 oz coffee",
+              "price_money": {
+                "amount": 179,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#coffee"
+            }
+          },
+          {
+            "id": "#largeCoffee",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "4739-DIL-69",
+              "name": "Large",
+              "description": "20 oz coffee",
+              "price_money": {
+                "amount": 199,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#coffee"
+            }
+          },
+          {
+            "id": "#xLargeCoffee",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "8056-JTL-93",
+              "name": "Extra Large",
+              "description": "24 oz coffee",
+              "price_money": {
+                "amount": 219,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#coffee"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#tea",
+      "type": "ITEM",
+      "item_data": {
+        "abbreviation": "Tea",
+        "name": "Tea",
+        "category_id": "#drinks",
+        "description": "Specialty tea Drink - 14 oz",
+        "product_type": "REGULAR",
+        "tax_ids": [
+          "#tax"
+        ],
+        "variations": [
+          {
+            "id": "#honeyLemon",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "1714-GCF-63",
+              "name": "Honey Lemon",
+              "description": "Green tea perfectly blended with the tastes of honey and lemon",
+              "price_money": {
+                "amount": 200,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#tea"
+            }
+          },
+          {
+            "id": "#peppermint",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "8818-PTV-42",
+              "name": "Peppermint",
+              "description": "Delight in the pure, refreshing taste of this warm, savory tea with a fresh and minty taste",
+              "price_money": {
+                "amount": 200,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#tea"
+            }
+          },
+          {
+            "id": "#chamomile",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "4642-BIH-38",
+              "name": "Chamomile",
+              "description": "Comforting, soothing taste and delicate aroma - caffiene free",
+              "price_money": {
+                "amount": 200,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#tea"
+            }
+          },
+          {
+            "id": "#peach",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "8213-GLY-94",
+              "name": "Perfect Peach",
+              "description": "Sweetened iced peach tea",
+              "price_money": {
+                "amount": 250,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#tea"
+            }
+          },
+          {
+            "id": "#iced",
+            "type": "ITEM_VARIATION",
+            "item_variation_data": {
+              "track_inventory": true,
+              "sku": "1262-SER-50",
+              "name": "Iced Tea",
+              "description": "Crisp and refreshing sweetened iced tea",
+              "price_money": {
+                "amount": 250,
+                "currency": "USD"
+              },
+              "pricing_type": "FIXED_PRICING",
+              "item_id": "#tea"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "#tax",
+      "type": "TAX",
+      "tax_data": {
+        "applies_to_custom_amounts": true,
+        "calculation_phase": "TAX_SUBTOTAL_PHASE",
+        "enabled": true,
+        "inclusion_type": "ADDITIVE",
+        "name": "Sales tax",
+        "percentage": "10"
+      }
+    }
+  ]
+}
