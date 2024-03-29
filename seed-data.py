@@ -17,6 +17,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from faker import Faker
 from square.client import Client
+# from square import Client
 
 # Faker generates some of the elements in the seed data
 fake = Faker()
@@ -56,7 +57,7 @@ def seed_catalog():
         )
         print("Successfully created catalog")
     except Exception:
-        oops(result.errors)
+        oops("Seed catalog", result.errors)
 
 
 # Upload sample customer data
@@ -77,7 +78,7 @@ def seed_customers():
         
         # In case of errors with CreateCustomer...
         except Exception:
-            oops(result.errors)
+            oops("Seed customers", result.errors)
 
 
 # Generate sample inventory data, based on catalog objects
@@ -120,7 +121,7 @@ def seed_inventory():
 
         # In case of errors with BatchChangeInventory...
         except Exception:
-            oops(result.errors)
+            oops("Seed inventory", result.errors)
 
 
 # Generate sample order data, based on catalog objects
@@ -150,13 +151,20 @@ def seed_orders():
                                 {
                                     "catalog_object_id": x["id"],
                                     "quantity": str(fake.random_int(min=1, max=5)),
+                                    "base_price_money": {
+                                        "amount": x["item_variation_data"]["price_money"]["amount"] + int(fake.random_int(min=100, max=5000)),
+                                        "currency": "USD"
+                                    }
                                 }
                             ],
-                            "source": {"name": SEED_DATA_REFERENCE_ID},
+                            "source": {"name": SEED_DATA_REFERENCE_ID}
                         }
                     }
                 )
-                print("Successfully created order:", result.body["order"]["id"])
+                print("Successfully created order:", \
+                      result.body["order"]["id"] + \
+                        " Line item base price:", \
+                            result.body["order"]["line_items"][0]["base_price_money"]["amount"])
 
                 # A sale happens when a order is paid for, so generate a payment for each order
                 result_2 = client.payments.create_payment(
@@ -176,7 +184,7 @@ def seed_orders():
 
             # In case of errors with CreateOrder...
             except Exception:
-                oops(result.errors)
+                oops("Seed orders", result.errors)
 
 
 # Clear sample customer data (delete it)
@@ -199,27 +207,37 @@ def clear_customers():
 
                     # In case of errors with DeleteCustomer...    
                     except Exception:
-                        oops(result_2.errors)
+                        oops("Clear customers", result_2.errors)
             else:
                 print("No customers found")
 
     # In case of errors with SearchCustomers...        
     except Exception:
-        oops(result.errors)
+        oops("Clear customers", result.errors)
 
 
 # Clear sample catalog data (delete it)
 def clear_catalog():
     try:
         # Find all of the seed data for catalog objects
-        result = client.catalog.search_catalog_objects(body={"text_filter": SKU_PREFIX})
-
+        result = client.catalog.search_catalog_objects(body = {
+            "object_types": [
+                "ITEM_VARIATION"
+           ],
+            'query': {
+                'prefix_query': {
+                    'attribute_name': 'sku',
+                    'attribute_prefix': SKU_PREFIX
+                }
+            }
+        })
+        
         # Delete each matching catalog object
         if "objects" in result.body:
             ids = []
             for x in result.body["objects"]:
                 ids.append(x["id"])
-            result = client.catalog.batch_delete_catalog_objects(
+                result = client.catalog.batch_delete_catalog_objects(
                 body={"object_ids": ids}
             )
             print("Successfully cleared catalog")
@@ -228,7 +246,7 @@ def clear_catalog():
 
     # In case of errors with SearchCatalogObjects...
     except Exception:
-        oops(result.errors)
+        oops("Clear catalog", result.errors)
 
 
 # Clear sample order data (orders can't be deleted, but they can be canceled)
@@ -241,31 +259,35 @@ def clear_orders():
                 "query": {
                     "filter": {
                         "source_filter": {"source_names": [SEED_DATA_REFERENCE_ID]},
-                        "state_filter": {"states": ["OPEN"]},
+                        "state_filter": {"states": ["OPEN","DRAFT"]},
                     }
                 },
             }
         )
-        
-        # Cancel them
-        if "orders" in result.body:
-            for x in result.body["orders"]:
-                result = client.orders.update_order(
-                    order_id=x["id"],
-                    body={"order": {"state": "CANCELED", "version": x["version"]}},
-                )
-                print("Order " + x["id"] + " canceled")
-        else:
-            print("No orders to cancel")
-
     # In case of errors with SearchOrders...
     except Exception:
-        oops(result.errors)
+        oops("Clear orders", result.errors)
+        
+    # Cancel them
+    if "orders" in result.body:
+        for x in result.body["orders"]:
+            result = client.orders.update_order(
+                order_id=x["id"],
+                body={"order": {"state": "CANCELED", "version": x["version"]}},
+            )
+            if result.is_success():
+                print("Order " + x["id"] + " canceled")
+            else:
+                print (result.errors[0]['detail'])
+                
+    else:
+        print("No orders to cancel")
+
 
 
 # Error handler
-def oops(errors):
-    print("Exception:")
+def oops(function: str, errors):
+    print("Exception,  " + function)
     for err in errors:
         print(f"\tcategory: {err['category']}")
         print(f"\tcode: {err['code']}")

@@ -21,6 +21,8 @@ from dotenv import load_dotenv
 def get_orders():
     limit = 25  # max number of orders per page
 
+    print("start date: " + start_date + ", end date: " + end_date)
+
     print("Retrieving orders from ", start_date, " to ", end_date)
 
     # Get the first page of orders
@@ -67,7 +69,12 @@ def get_orders():
                             item_id = line_item["catalog_object_id"]
                             if not item_id in item_tally:
                                 item_tally.update(
-                                    {item_id: {"qtySold": int(line_item["quantity"])}}
+                                    {
+                                        item_id: {
+                                            "qtySold": int(line_item["quantity"]),
+                                             "total_sales": int(line_item["base_price_money"]["amount"]) * int(line_item["quantity"])
+                                            }
+                                        }
                                 )
                             else:
                                 item_tally.update(
@@ -76,7 +83,11 @@ def get_orders():
                                             "qtySold": int(
                                                 item_tally[item_id].get("qtySold")
                                             )
-                                            + int(line_item["quantity"])
+                                            + int(line_item["quantity"]),
+                                            "total_sales": int(
+                                                item_tally[item_id].get("total_sales")) 
+                                                + int(line_item["base_price_money"]["amount"]) * int(line_item["quantity"])
+
                                         }
                                     }
                                 )
@@ -87,7 +98,7 @@ def get_orders():
 
                             # Get more details about this item from the catalog
                             get_catalog_info(item_id)
-
+                            
                         else:
                             # No catalog info available (an ad hoc item, perhaps?)
                             print("This line item doesn't have a catalog_object_id")
@@ -193,7 +204,7 @@ def print_sales_report():
         )
         print(f'{value.get("qtySold"):>5} ', end="")
         print(
-            f'{value.get("qtySold") * value.get("priceEach").get("amount"):10} {value.get("priceEach").get("currency")} ',
+            f'{value.get("total_sales") } {value.get("priceEach").get("currency")} ',
             end="",
         )
         print(f'{value.get("qtyRemaining"):>7}')
