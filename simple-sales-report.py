@@ -14,6 +14,7 @@
 import sys, os, argparse, datetime
 
 from square.client import Client
+from square.http.auth.o_auth_2 import BearerAuthCredentials
 from dotenv import load_dotenv
 
 
@@ -243,7 +244,9 @@ if __name__ == "__main__":
     # We don't recommend running this script in a production environment
     load_dotenv()
     client = Client(
-        access_token=os.environ["SQUARE_ACCESS_TOKEN"],
+       bearer_auth_credentials=BearerAuthCredentials(
+        access_token=os.environ['SQUARE_ACCESS_TOKEN']
+    ),
         environment=os.environ["SQUARE_ENVIRONMENT"],
     )
     location_id = os.environ["SQUARE_LOCATION_ID"]
