@@ -16,6 +16,8 @@ import sys, os, argparse, datetime
 from square.client import Client
 from square.http.auth.o_auth_2 import BearerAuthCredentials
 from dotenv import load_dotenv
+from prettytable import PrettyTable
+import csv
 
 
 # Process all the orders between start_date and end_date
@@ -24,7 +26,7 @@ def get_orders():
 
     print("start date: " + start_date + ", end date: " + end_date)
 
-    print("Retrieving orders from ", start_date, " to ", end_date)
+    print("Retrieving orders from ", start_date, " to ", end_date, "...")
 
     # Get the first page of orders
     result = client.orders.search_orders(
@@ -46,25 +48,11 @@ def get_orders():
     if result.is_success():
         while (result.body != {}) and ("orders" in result.body.keys()):
             # Walk through each order on the current page
-            for order in result.body["orders"]:
-                print("Order ID: " + order["id"] + ", closed at: " + order["closed_at"])
+            for order in result.body["orders"]:               
 
                 # Get basic for this order's items, and save it to the item_tally
                 if "line_items" in order:
                     for line_item in order["line_items"]:
-                        if "name" in line_item:
-                            print(
-                                "\t",
-                                line_item["name"],
-                                "-",
-                                line_item["variation_name"],
-                                "(qty:",
-                                line_item["quantity"],
-                                ")",
-                            )
-                        else:
-                            print("This line item doesn't have a name")
-
                         # Get basic info about a particular item, and save it to the item_tally
                         if "catalog_object_id" in line_item:
                             item_id = line_item["catalog_object_id"]
@@ -186,37 +174,53 @@ def get_inventory_count(item_id):
 
 # Generate the sales report
 def print_sales_report():
-    print()
-    print(f"*** SALES REPORT: {start_date} - {end_date} ***")
-    print(
-        f'Item{" "*21}SKU{" "*21}Price{" "*6}QtySold{" "*2}TotalSales{" "*4}QtyRemaining'
-    )
-    print(f'{"-"*100}')
+    table = PrettyTable()
 
-    grand_total = 0
+    # Define table columns
+    table.field_names = ["ID", "Qty Sold", "Total Sales", "Name", "Variation Name", "SKU", "Price Amount", "Price Currency", "Qty Remaining"]
 
-    # Walk through the item_tally and print the details
+    # Add data rows
     for key, value in item_tally.items():
-        print(f'{value.get("name")} - {value.get("variation_name"):18} ', end="")
-        print(f'{value.get("sku"):18} ', end="")
-        print(
-            f'{value.get("priceEach").get("amount"):5.2f} {value.get("priceEach").get("currency")} ',
-            end="",
-        )
-        print(f'{value.get("qtySold"):>5} ', end="")
-        print(
-            f'{value.get("total_sales") } {value.get("priceEach").get("currency")} ',
-            end="",
-        )
-        print(f'{value.get("qtyRemaining"):>7}')
+        table.add_row([
+            key,
+            value["qtySold"],
+            "${:,.2f}".format(value["total_sales"] / 100),
+            value["name"],
+            value["variation_name"],
+            value["sku"],
+            "${:,.2f}".format(value["priceEach"]["amount"] / 100),
+            value["priceEach"]["currency"],
+            value["qtyRemaining"]
+        ])
 
-        # Calculate the subtotal for this item, and add to the grand_total
-        grand_total += value.get("qtySold") * value.get("priceEach").get("amount")
+    # Print the table
+    print(table)
 
-    # Print the bottom line, and we're done
-    print(f"\nGrand total sales: {grand_total}")
+def write_sales_to_csv():
+    # CSV file path
+    csv_file = 'sales_report.csv'
 
+    # Write data to CSV file
+    with open(csv_file, 'w', newline='') as file:
+        writer = csv.writer(file)
 
+        # Write header row
+        writer.writerow(["ID", "Qty Sold", "Total Sales", "Name", "Variation Name", "SKU", "Price Amount", "Price Currency", "Qty Remaining"])
+
+        # Write data rows
+        for key, value in item_tally.items():
+            writer.writerow([
+                key,
+                value["qtySold"],
+                value["total_sales"],
+                value["name"],
+                value["variation_name"],
+                value["sku"],
+                value["priceEach"]["amount"],
+                value["priceEach"]["currency"],
+                value["qtyRemaining"]
+            ])
+    print(f'Sales Report has been written to {csv_file}')   
 # Ensure dates are in YYYY-MM-DD format
 def check_date_format(dt):
     fmt = "%Y-%m-%d"
@@ -249,7 +253,10 @@ if __name__ == "__main__":
     ),
         environment=os.environ["SQUARE_ENVIRONMENT"],
     )
-    location_id = os.environ["SQUARE_LOCATION_ID"]
+    # Use the main location of the account - retrieve_location('yourOtherLocationId') to use a different location
+    result = client.locations.retrieve_location('main') #os.environ["SQUARE_LOCATION_ID"]
+    location_id = result.body["location"]["id"]
+
 
     # Get start and end dates for the sales report
     parser = argparse.ArgumentParser(
@@ -277,3 +284,4 @@ if __name__ == "__main__":
     item_tally = {}  # keeps track of subtotals, etc. as the program runs
     get_orders()
     print_sales_report()
+    write_sales_to_csv()

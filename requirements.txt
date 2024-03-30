@@ -12,6 +12,7 @@ jsonpickle==3.0.3
 jsonpointer==2.4
 msgpack==1.0.8
 packaging==24.0
+prettytable==3.10.0
 python-dateutil==2.8.2
 python-dotenv==1.0.1
 requests==2.31.0
@@ -19,3 +20,4 @@ setuptools==69.2.0
 six==1.16.0
 squareup==35.1.0.20240320
 urllib3==2.2.1
+wcwidth==0.2.13
