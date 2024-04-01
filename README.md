@@ -24,11 +24,62 @@ The sample shows how you can use this data to create a sales report.  The report
 The sample application includes a script that creates sample customers and catalog data in your Square account Sandbox environment. The script also generates orders and inventory counts based on the uploaded data.
 
 ## Installation and Usage
-For more information, see [Build a Sales report](https://developer.squareup.com/docs/commerce/scenarios/simple-sales-report) in the Square developer documentation:
-* [Step 1: Download and configure the application](https://developer.squareup.com/docs/commerce/scenarios/simple-sales-report#step-1-download-and-configure-the-application)
-* [Step 2: Run the data seeding script](https://developer.squareup.com/docs/commerce/scenarios/simple-sales-report#step-2-run-the-data-seeding-script)
-* [Step 3: Run the sales reporting script](https://developer.squareup.com/docs/merchants/scenarios/simple-sales-report#step-3-run-the-sales-reporting-script)
-* [Step 4 (optional): Clean up](https://developer.squareup.com/docs/commerce/scenarios/simple-sales-report#step-4-optional-clean-up)
+### Setup
+Create a new Python Virtual Environment and activated it
+```
+$ python -m venv env
+$ source env/bin/activate
+```
+Install the project dependencies
+```
+$ pip install -r requirements.txt
+```
+
+Rename the file `.env.example` to `.env`
+```
+$ mv .env.example .env
+```
+Place the Sandbox access token for your desired Sandbox Test Account as the value of `SQUARE_ACCESS_TOKEN` in your `.env` file.
+
+You can get the Access Token from [here](https://developer.squareup.com/console/en/sandbox-test-accounts)
+
+
+### Seed Test Data
+We have provided a seed script to create catalog items, inventory, customers, and orders into your Sandbox Seller account
+
+**Caution:** This will create some permanent data into your Sandbox test account. We highly recommend creating a new test account and using that for this project.
+
+Run the seed script
+```
+python ./seed-data.py --seed
+```
+
+### Run the sales report
+
+Now that your Sandbox test account has data in it you can run the sales report
+
+```
+$ python ./simple-sales-report.py --start-date 2024-01-01 --end-date 2024-12-31
+```
+
+We provide a start date and end date, this will grab data for the whole year, but you can change those values to hone in on a specific date range of your choice.
+
+When the script finishes running you will get a table print out of your sales report as well as a newly created `sales_report.csv` file.
+
+### Cleanup (Optional)
+
+If you like, you can clear out the seeded data by running the seed script with the `--clear` flag. 
+```
+$ python ./seed-data.py --clear
+```
+
+This will clear all the catalog items, customers, and any orders in `OPEN` or `DRAFT` status. 
+
+**Note**: Inventory counts and completed orders can't be deleted.
+
+
+## More Information
+[Build a Sales report](https://developer.squareup.com/docs/commerce/scenarios/simple-sales-report) in the Square developer documentation:
 
 ## Useful Links
 * [Square Python SDK](https://developer.squareup.com/docs/sdks/python)

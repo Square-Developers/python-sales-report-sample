@@ -124,7 +124,7 @@ def get_orders():
 
     # In case of errors with SearchOrders...
     elif result.is_error():
-        oops(result.errors)
+        handle_error(result.errors)
 
 
 # Look up an item in the catalog, and save it in the item_tally
@@ -153,7 +153,7 @@ def get_catalog_info(item_id):
 
     # In case of errors with RetrieveCatalogObject...
     except Exception:
-        oops(result.errors)
+        handle_error(result.errors)
 
 
 # Retrieve quantity info for an item, and save it in the item_tally.
@@ -169,7 +169,7 @@ def get_inventory_count(item_id):
 
     # In case of errors with GetInventoryCount...
     except Exception:
-        oops(result.errors)
+        handle_error(result.errors)
 
 
 # Generate the sales report
@@ -235,7 +235,7 @@ def check_date_format(dt):
 
 
 # Error handler
-def oops(errors):
+def handle_error(errors):
     print("Exception:")
     for err in errors:
         print(f"\tcategory: {err['category']}")

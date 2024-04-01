@@ -58,7 +58,7 @@ def seed_catalog():
         )
         print("Successfully created catalog")
     except Exception:
-        oops("Seed catalog", result.errors)
+        handle_error("Seed catalog", result.errors)
 
 
 # Upload sample customer data
@@ -84,7 +84,7 @@ def seed_customers():
     
     # In case of errors with CreateCustomer...
     except Exception:
-        oops("Seed customers", result.errors)
+        handle_error("Seed customers", result.errors)
 
 
 # Generate sample inventory data, based on catalog objects
@@ -126,7 +126,7 @@ def seed_inventory():
 
     # In case of errors with BatchChangeInventory...
     except Exception:
-        oops("Seed inventory", result.errors)
+        handle_error("Seed inventory", result.errors)
 
 
 # Generate sample order data, based on catalog objects
@@ -186,37 +186,37 @@ def seed_orders():
 
             # In case of errors with CreateOrder...
             except Exception:
-                oops("Seed orders", result.errors)
+                handle_error("Seed orders", result.errors)
 
 
 # Clear sample customer data (delete it)
 def clear_customers():
     try:
         # Find all of the seed data for customers
-        result = client.customers.search_customers(
+        search_result = client.customers.search_customers(
             body={
                 "query": {"filter": {"reference_id": {"exact": SEED_DATA_REFERENCE_ID}}}
             }
         )
-        if result.is_success():
-            if "customers" in result.body:
-                try: 
-                    customer_ids = [obj['id'] for obj in result.body['customers']]
-                    client.customers.bulk_delete_customers(
-                        body={
-                            "customer_ids": customer_ids
-                        }
-                    )
+        if search_result.is_success():
+            if "customers" in search_result.body:
+                customer_ids = [obj['id'] for obj in search_result.body['customers']]
+                delete_result = client.customers.bulk_delete_customers(
+                    body={
+                        "customer_ids": customer_ids
+                    }
+                )
+                if delete_result.is_success():
                     print("Successfully cleared customers")
-                # In case of errors with DeleteCustomer...    
-                except Exception:
-                        oops("Clear customers", result_2.errors)
+                else:
+                    handle_error("Bulk delete customers", delete_result.errors)
             else:
                 print("No customers found")
+        else:
+            handle_error("Search customers", search_result.errors)
 
-    # In case of errors with SearchCustomers...        
-    except Exception:
-        oops("Clear customers", result.errors)
+    except Exception as e:
+        handle_error("Clear customers", str(e))
 
 
 # Clear sample catalog data (delete it)
@@ -259,7 +259,7 @@ def clear_catalog():
 
     # In case of errors with SearchCatalogObjects...
     except Exception:
-        oops("Clear catalog", result.errors)
+        handle_error("Clear catalog", result.errors)
 
 
 # Clear sample order data (orders can't be deleted, but they can be canceled)
@@ -279,7 +279,7 @@ def clear_orders():
         )
     # In case of errors with SearchOrders...
     except Exception:
-        oops("Clear orders", result.errors)
+        handle_error("Clear orders", result.errors)
         
     # Cancel them
     if "orders" in result.body:
@@ -299,7 +299,7 @@ def clear_orders():
 
 
 # Error handler
-def oops(function: str, errors):
+def handle_error(function: str, errors):
     print("Exception,  " + function)
     for err in errors:
         print(f"\tcategory: {err['category']}")
@@ -338,10 +338,11 @@ if __name__ == "__main__":
         seed_inventory()
         seed_orders()
     elif args.clear and not args.seed:
-        if (input("Are you sure? (y/n)").lower()) == "y":
+        if (input("Are you sure? (y/N)").lower()) == "y":
             clear_customers()
             clear_catalog()
             # Note that inventory data persists and can't be deleted, or otherwise "cleared"
+            # Note that completed orders can't be deleted - open or draft orders may be canceled
             clear_orders()
     else:
         parser.print_usage()
