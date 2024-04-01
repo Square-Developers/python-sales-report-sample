@@ -342,7 +342,7 @@ if __name__ == "__main__":
         seed_inventory()
         seed_orders()
     elif args.clear and not args.seed:
-        if (input("Are you sure? (y/N)").lower()) == "y":
+        if (input("Are you sure? (y/N): ").lower()) == "y":
             clear_customers()
             clear_catalog()
             # Note that inventory data persists and can't be deleted, or otherwise "cleared"
