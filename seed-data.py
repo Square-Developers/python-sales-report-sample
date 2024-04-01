@@ -12,12 +12,13 @@
 # limitations under the License.
 
 import argparse, json, os, sys, uuid
-from datetime import datetime
+import datetime
 
 from dotenv import load_dotenv
 from faker import Faker
 from square.client import Client
-# from square import Client
+from square.http.auth.o_auth_2 import BearerAuthCredentials
+
 
 # Faker generates some of the elements in the seed data
 fake = Faker()
@@ -57,7 +58,7 @@ def seed_catalog():
         )
         print("Successfully created catalog")
     except Exception:
-        oops("Seed catalog", result.errors)
+        handle_error("Seed catalog", result.errors)
 
 
 # Upload sample customer data
@@ -65,20 +66,25 @@ def seed_customers():
     # Read data from external file
     with open("seed-data-customers.json", "r") as test_data:
         seed_data = json.load(test_data)
-
+    
+    customers = dict()
     # Add tags to each item, to mark it as seed data
     for customer in seed_data["customers"]:
         customer["reference_id"] = SEED_DATA_REFERENCE_ID
         customer["email_address"] = fake.email()
-
+        customers['#' + fake.iana_id()] = customer
         # Now upload the data
-        try:
-            result = client.customers.create_customer(customer)
-            print("Successfully created customer:", result.body["customer"]["id"])
-        
-        # In case of errors with CreateCustomer...
-        except Exception:
-            oops("Seed customers", result.errors)
+    try:
+        result = client.customers.bulk_create_customers(
+            body= {
+                "customers": customers
+            }
+        )
+        print("Successfully created customers")
+    
+    # In case of errors with CreateCustomer...
+    except Exception:
+        handle_error("Seed customers", result.errors)
 
 
 # Generate sample inventory data, based on catalog objects
@@ -97,31 +103,30 @@ def seed_inventory():
     )
 
     # Generate a (fake) inventory count for each item
+    changes = []
     for x in result.body["objects"]:
-        try:
-            stmp = datetime.now().isoformat()
-            result_2 = client.inventory.batch_change_inventory(
-                {
-                    "idempotency_key": str(uuid.uuid4()),
-                    "changes": [
-                        {
-                            "physical_count": {
-                                "quantity": str(fake.random_int(min=100, max=200)),
-                                "location_id": location_id,
-                                "state": "IN_STOCK",
-                                "catalog_object_id": x["id"],
-                                "occurred_at": datetime.utcnow().isoformat("T") + "Z",
-                            },
-                            "type": "PHYSICAL_COUNT",
-                        }
-                    ],
-                }
-            )
-            print("Successfully adjusted inventory for item variation: " + x["id"])
+        changes.append ({
+            "physical_count": {
+                "quantity": str(fake.random_int(min=50, max=100)),
+                "location_id": location_id,
+                "state": "IN_STOCK",
+                "catalog_object_id": x["id"],
+                "occurred_at": datetime.datetime.now(datetime.UTC)
+            },
+            "type": "PHYSICAL_COUNT",      
+          }
+        )
+        
+    try:
+        client.inventory.batch_change_inventory({
+            "idempotency_key": str(uuid.uuid4()),
+            "changes": changes
+        })
+        print("Successfully adjusted inventory for item variations")
 
-        # In case of errors with BatchChangeInventory...
-        except Exception:
-            oops("Seed inventory", result.errors)
+    # In case of errors with BatchChangeInventory...
+    except Exception:
+        handle_error("Seed inventory", result.errors)
 
 
 # Generate sample order data, based on catalog objects
@@ -140,8 +145,10 @@ def seed_orders():
     )
 
     # Create an order for each item, varying the line item quantity for each
+    print("creating " + str(len(result.body["objects"])) + " orders and paying for them...")
     for x in result.body["objects"]:
-        for y in range(0, fake.random_int(min=1, max=10)):
+        # Increase the number of orders by changing the range value, currently we will create 1 order for every item variation
+        for _ in range(0, 1):
             try:
                 result = client.orders.create_order(
                     body={
@@ -152,7 +159,7 @@ def seed_orders():
                                     "catalog_object_id": x["id"],
                                     "quantity": str(fake.random_int(min=1, max=5)),
                                     "base_price_money": {
-                                        "amount": x["item_variation_data"]["price_money"]["amount"] + int(fake.random_int(min=100, max=5000)),
+                                        "amount": x["item_variation_data"]["price_money"]["amount"],
                                         "currency": "USD"
                                     }
                                 }
@@ -161,13 +168,9 @@ def seed_orders():
                         }
                     }
                 )
-                print("Successfully created order:", \
-                      result.body["order"]["id"] + \
-                        " Line item base price:", \
-                            result.body["order"]["line_items"][0]["base_price_money"]["amount"])
 
                 # A sale happens when a order is paid for, so generate a payment for each order
-                result_2 = client.payments.create_payment(
+                client.payments.create_payment(
                     body={
                         "order_id": result.body["order"]["id"],
                         "idempotency_key": str(uuid.uuid4()),
@@ -180,40 +183,40 @@ def seed_orders():
                         },
                     }
                 )
-                print("\tSuccessfully paid for order: ", result.body["order"]["id"])
 
             # In case of errors with CreateOrder...
             except Exception:
-                oops("Seed orders", result.errors)
+                handle_error("Seed orders", result.errors)
 
 
 # Clear sample customer data (delete it)
 def clear_customers():
     try:
         # Find all of the seed data for customers
-        result = client.customers.search_customers(
+        search_result = client.customers.search_customers(
             body={
                 "query": {"filter": {"reference_id": {"exact": SEED_DATA_REFERENCE_ID}}}
             }
         )
-        if result.is_success():
-
-            # Delete each matching customer
-            if "customers" in result.body:
-                for c in result.body["customers"]:
-                    try:
-                        result_2 = client.customers.delete_customer(c["id"])
-                        print("Successfully cleared customer:", c["id"])
-
-                    # In case of errors with DeleteCustomer...    
-                    except Exception:
-                        oops("Clear customers", result_2.errors)
+        if search_result.is_success():
+            if "customers" in search_result.body:
+                customer_ids = [obj['id'] for obj in search_result.body['customers']]
+                delete_result = client.customers.bulk_delete_customers(
+                    body={
+                        "customer_ids": customer_ids
+                    }
+                )
+                if delete_result.is_success():
+                    print("Successfully cleared customers")
+                else:
+                    handle_error("Bulk delete customers", delete_result.errors)
             else:
                 print("No customers found")
+        else:
+            handle_error("Search customers", search_result.errors)
 
-    # In case of errors with SearchCustomers...        
-    except Exception:
-        oops("Clear customers", result.errors)
+    except Exception as e:
+        handle_error("Clear customers", str(e))
 
 
 # Clear sample catalog data (delete it)
@@ -235,18 +238,28 @@ def clear_catalog():
         # Delete each matching catalog object
         if "objects" in result.body:
             ids = []
+            item_ids = []
+
             for x in result.body["objects"]:
                 ids.append(x["id"])
-                result = client.catalog.batch_delete_catalog_objects(
+                item_ids.append(x["item_variation_data"]["item_id"])
+
+            # delete the item variation data
+            client.catalog.batch_delete_catalog_objects(
                 body={"object_ids": ids}
             )
+            # delete the item data
+            client.catalog.batch_delete_catalog_objects(
+                body={"object_ids": item_ids}
+            )
+
             print("Successfully cleared catalog")
         else:
             print("No catalog items to delete")
 
     # In case of errors with SearchCatalogObjects...
     except Exception:
-        oops("Clear catalog", result.errors)
+        handle_error("Clear catalog", result.errors)
 
 
 # Clear sample order data (orders can't be deleted, but they can be canceled)
@@ -266,7 +279,7 @@ def clear_orders():
         )
     # In case of errors with SearchOrders...
     except Exception:
-        oops("Clear orders", result.errors)
+        handle_error("Clear orders", result.errors)
         
     # Cancel them
     if "orders" in result.body:
@@ -286,7 +299,7 @@ def clear_orders():
 
 
 # Error handler
-def oops(function: str, errors):
+def handle_error(function: str, errors):
     print("Exception,  " + function)
     for err in errors:
         print(f"\tcategory: {err['category']}")
@@ -299,11 +312,19 @@ if __name__ == "__main__":
     # We don't recommend running this script in a production environment
     load_dotenv()
     client = Client(
-        access_token=os.environ["SQUARE_ACCESS_TOKEN"],
+       bearer_auth_credentials=BearerAuthCredentials(
+        access_token=os.environ['SQUARE_ACCESS_TOKEN']
+    ),
         environment=os.environ["SQUARE_ENVIRONMENT"],
     )
 
-    location_id = os.environ["SQUARE_LOCATION_ID"]
+    if os.environ['SQUARE_ENVIRONMENT'] != "sandbox":
+        print("This script is intended for use with the Square Sandbox environment. Do not run this script in a production environment.")
+        sys.exit(1)
+
+    # Use the main location of the account - retrieve_location('yourOtherLocationId') to use a different location
+    result = client.locations.retrieve_location('main')
+    location_id = result.body["location"]["id"]
 
     # Determine whether we're creating or clearing test data
     parser = argparse.ArgumentParser(
@@ -321,10 +342,11 @@ if __name__ == "__main__":
         seed_inventory()
         seed_orders()
     elif args.clear and not args.seed:
-        if (input("Are you sure? (y/n)").lower()) == "y":
+        if (input("Are you sure? (y/N): ").lower()) == "y":
             clear_customers()
             clear_catalog()
             # Note that inventory data persists and can't be deleted, or otherwise "cleared"
+            # Note that completed orders can't be deleted - open or draft orders may be canceled
             clear_orders()
     else:
         parser.print_usage()
