@@ -228,7 +228,7 @@ def check_date_format(dt):
     try:
         dt = datetime.datetime.strptime(dt, fmt)
     except ValueError:
-        print(dt, ": Invalid date or date format")
+        print(dt, ": Invalid date or date format - use YYYY-MM-DD")
         exit(1)
 
     return dt.strftime(fmt)
@@ -263,23 +263,21 @@ if __name__ == "__main__":
         description="Generate a sales report for a time period"
     )
     parser.add_argument(
-        "--start-date", required=True, help="Start date for the report, in YYYY-MM-DD format"
+        "--start-date", required=False, help="Start date for the report, in YYYY-MM-DD format"
     )
     parser.add_argument(
-        "--end-date", required=True, help="End date for the report, in YYYY-MM-DD format"
+        "--end-date", required=False, help="End date for the report, in YYYY-MM-DD format"
     )
     args = parser.parse_args()
 
-    if (not args.start_date and args.end_date) or (
-        args.start_date and not args.end_date
-    ):
-        print("Missing start-date and/or end_date")
-        exit(1)
-
-    start_date = check_date_format(args.start_date)
-    end_date = check_date_format(args.end_date)
-    if end_date < start_date:
-        print("End date cannot be earlier than start date")
+    # If no dates are provided, default to today
+    if (not args.start_date or not args.end_date):
+        start_date = end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    else:
+        start_date = check_date_format(args.start_date)
+        end_date = check_date_format(args.end_date)
+        if end_date < start_date:
+            print("End date cannot be earlier than start date")
 
     item_tally = {}  # keeps track of subtotals, etc. as the program runs
     get_orders()

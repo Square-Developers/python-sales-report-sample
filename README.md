@@ -59,10 +59,16 @@ python ./seed-data.py --seed
 Now that your Sandbox test account has data in it you can run the sales report
 
 ```
+$ python ./simple-sales-report.py
+```
+**Note:** This will run a sales report of the day, and default to Today. If you would like to change the range in which your sales report runs you can supply the arguments `--start-date` and `--end-date`. 
+
+example: 
+```
 $ python ./simple-sales-report.py --start-date 2024-01-01 --end-date 2024-12-31
 ```
+will run the sales report for the entire year of 2024
 
-We provide a start date and end date, this will grab data for the whole year, but you can change those values to hone in on a specific date range of your choice.
 
 When the script finishes running you will get a table print out of your sales report as well as a newly created `sales_report.csv` file.
 
