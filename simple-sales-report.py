@@ -17,6 +17,8 @@ from square.client import Client
 from square.http.auth.o_auth_2 import BearerAuthCredentials
 from dotenv import load_dotenv
 from prettytable import PrettyTable
+from collections import defaultdict
+import time
 import csv
 
 
@@ -56,6 +58,8 @@ def get_orders():
                         # Get basic info about a particular item, and save it to the item_tally
                         if "catalog_object_id" in line_item:
                             item_id = line_item["catalog_object_id"]
+                            item_ids.append(item_id)
+                            # Check if this itemId is already in the item_tally, if not, add it
                             if not item_id in item_tally:
                                 item_tally.update(
                                     {
@@ -66,13 +70,16 @@ def get_orders():
                                         }
                                 )
                             else:
+                                # update the existing item_id
                                 item_tally.update(
                                     {
                                         item_id: {
+                                            # Add the quantity sold to the existing quantity
                                             "qtySold": int(
                                                 item_tally[item_id].get("qtySold")
                                             )
                                             + int(line_item["quantity"]),
+                                            # Add the total sales to the existing total sales 
                                             "total_sales": int(
                                                 item_tally[item_id].get("total_sales")) 
                                                 + int(line_item["base_price_money"]["amount"]) * int(line_item["quantity"])
@@ -80,14 +87,12 @@ def get_orders():
                                         }
                                     }
                                 )
+                            # set the name, and variation_name for this item_id
                             item_tally[item_id]["name"] = line_item["name"]
                             item_tally[item_id]["variation_name"] = line_item[
                                 "variation_name"
                             ]
 
-                            # Get more details about this item from the catalog
-                            get_catalog_info(item_id)
-                            
                         else:
                             # No catalog info available (an ad hoc item, perhaps?)
                             print("This line item doesn't have a catalog_object_id")
@@ -121,55 +126,50 @@ def get_orders():
             # If there isn't a cursor, then we're done getting orders
             else:
                 break
+        if item_ids:
+            get_catalog_info_bulk(item_ids)
+            get_inventory_counts_bulk(item_ids)
 
     # In case of errors with SearchOrders...
     elif result.is_error():
         handle_error(result.errors)
 
 
-# Look up an item in the catalog, and save it in the item_tally
-def get_catalog_info(item_id):
+# Define a function to get catalog item details in bulk
+def get_catalog_info_bulk(item_ids):
     try:
-        result = client.catalog.retrieve_catalog_object(item_id)
+        result = client.catalog.batch_retrieve_catalog_objects(body={"object_ids": item_ids})
 
-        # Fine-grained item details (such as sku and priceEach) are stored within the
-        # item variation data.  Save these details in the item_tally.
         if result.is_success():
-            sku = result.body["object"]["item_variation_data"].get("sku")
-            if sku:
+            for catalog_object in result.body["objects"]:
+                item_id = catalog_object["id"]
+                item_variation_data = catalog_object.get("item_variation_data", {})
+                sku = item_variation_data.get("sku", "N/A")
+                priceEach = item_variation_data.get("price_money")
+                
                 item_tally[item_id]["sku"] = sku
-        else:
-            print("This item variation doesn't have a SKU")
+                item_tally[item_id]["priceEach"] = priceEach
 
-        priceEach = result.body["object"]["item_variation_data"].get("price_money")
-
-        if priceEach:
-            item_tally[item_id]["priceEach"] = priceEach
-        else:
-            print("This item variation doesn't have a price")
-
-        # Find out how many of these items we've sold, and how many remain
-        get_inventory_count(item_id)
-
-    # In case of errors with RetrieveCatalogObject...
-    except Exception:
-        handle_error(result.errors)
-
+    except Exception as e:
+        handle_error([{"code": "API_ERROR", "detail": str(e)}])
 
 # Retrieve quantity info for an item, and save it in the item_tally.
 # (Note that Square only keeps track of quantities if track_inventory
 # (in the CatalogItemVariation object) is set to true.
-def get_inventory_count(item_id):
+def get_inventory_counts_bulk(item_ids):
     try:
-        result = client.inventory.retrieve_inventory_count(
-            catalog_object_id=item_id,
-            location_ids=location_id,
+        result = client.inventory.batch_retrieve_inventory_counts(
+            body={"catalog_object_ids": item_ids}
         )
-        item_tally[item_id]["qtyRemaining"] = result.body["counts"][0]["quantity"]
 
-    # In case of errors with GetInventoryCount...
-    except Exception:
-        handle_error(result.errors)
+        if result.is_success():
+            for inventory_count in result.body["counts"]:
+                item_id = inventory_count["catalog_object_id"]
+                quantity = inventory_count["quantity"]
+                item_tally[item_id]["qtyRemaining"] = quantity
+
+    except Exception as e:
+        handle_error([{"code": "API_ERROR", "detail": str(e)}])
 
 
 # Generate the sales report
@@ -177,7 +177,7 @@ def print_sales_report():
     table = PrettyTable()
 
     # Define table columns
-    table.field_names = ["ID", "Qty Sold", "Total Sales", "Name", "Variation Name", "SKU", "Price Amount", "Price Currency", "Qty Remaining"]
+    table.field_names = ["ID", "Qty Sold", "Total Sales", "Price Currency", "Name", "Variation Name", "SKU", "Qty Remaining"]
 
     # Add data rows
     for key, value in item_tally.items():
@@ -185,11 +185,10 @@ def print_sales_report():
             key,
             value["qtySold"],
             "${:,.2f}".format(value["total_sales"] / 100),
+            value["priceEach"]["currency"],
             value["name"],
             value["variation_name"],
             value["sku"],
-            "${:,.2f}".format(value["priceEach"]["amount"] / 100),
-            value["priceEach"]["currency"],
             value["qtyRemaining"]
         ])
 
@@ -205,7 +204,7 @@ def write_sales_to_csv():
         writer = csv.writer(file)
 
         # Write header row
-        writer.writerow(["ID", "Qty Sold", "Total Sales", "Name", "Variation Name", "SKU", "Price Amount", "Price Currency", "Qty Remaining"])
+        writer.writerow(["ID", "Qty Sold", "Total Sales", "Price Amount", "Name", "Variation Name", "SKU", "Price Currency", "Qty Remaining"])
 
         # Write data rows
         for key, value in item_tally.items():
@@ -213,11 +212,10 @@ def write_sales_to_csv():
                 key,
                 value["qtySold"],
                 value["total_sales"],
+                value["priceEach"]["currency"],
                 value["name"],
                 value["variation_name"],
                 value["sku"],
-                value["priceEach"]["amount"],
-                value["priceEach"]["currency"],
                 value["qtyRemaining"]
             ])
     print(f'Sales Report has been written to {csv_file}')   
@@ -279,7 +277,11 @@ if __name__ == "__main__":
         if end_date < start_date:
             print("End date cannot be earlier than start date")
 
-    item_tally = {}  # keeps track of subtotals, etc. as the program runs
+    item_tally = defaultdict(lambda: {"qtySold": 0, "total_sales": 0})
+    item_ids = []  # Keep track of item ids for bulk retrieval
+    start_time = time.time()
     get_orders()
     print_sales_report()
     write_sales_to_csv()
+    end_time = time.time()
+    print(f"Execution time: {end_time - start_time} seconds")
