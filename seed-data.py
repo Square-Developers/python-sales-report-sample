@@ -319,7 +319,7 @@ if __name__ == "__main__":
     )
 
     if os.environ['SQUARE_ENVIRONMENT'] != "sandbox":
-        print("This script is intended for use with the Square Sandbox environment.")
+        print("This script is intended for use with the Square Sandbox environment. Do not run this script in a production environment.")
         sys.exit(1)
 
     # Use the main location of the account - retrieve_location('yourOtherLocationId') to use a different location

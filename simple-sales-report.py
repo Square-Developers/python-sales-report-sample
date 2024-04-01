@@ -18,7 +18,6 @@ from square.http.auth.o_auth_2 import BearerAuthCredentials
 from dotenv import load_dotenv
 from prettytable import PrettyTable
 from collections import defaultdict
-import time
 import csv
 
 
@@ -139,7 +138,6 @@ def get_orders():
 def get_catalog_info_bulk(item_ids):
     try:
         result = client.catalog.batch_retrieve_catalog_objects(body={"object_ids": item_ids})
-
         if result.is_success():
             for catalog_object in result.body["objects"]:
                 item_id = catalog_object["id"]
@@ -178,22 +176,25 @@ def print_sales_report():
 
     # Define table columns
     table.field_names = ["ID", "Qty Sold", "Total Sales", "Price Currency", "Name", "Variation Name", "SKU", "Qty Remaining"]
-
+    total_sales_sum = 0
     # Add data rows
     for key, value in item_tally.items():
         table.add_row([
             key,
             value["qtySold"],
             "${:,.2f}".format(value["total_sales"] / 100),
-            value["priceEach"]["currency"],
+            value["priceEach"]["currency"] if "priceEach" in value else 'N/A',
             value["name"],
             value["variation_name"],
-            value["sku"],
-            value["qtyRemaining"]
+            value["sku"] if "sku" in value else 'N/A',
+            value["qtyRemaining"] if "qtyRemaining" in value else "N/A"
+
         ])
+        total_sales_sum += value["total_sales"]
 
     # Print the table
     print(table)
+    print(f"Total Sales: ${total_sales_sum / 100}")
 
 def write_sales_to_csv():
     # CSV file path
@@ -212,11 +213,11 @@ def write_sales_to_csv():
                 key,
                 value["qtySold"],
                 value["total_sales"],
-                value["priceEach"]["currency"],
+                value["priceEach"]["currency"] if "priceEach" in value else 'N/A',
                 value["name"],
                 value["variation_name"],
-                value["sku"],
-                value["qtyRemaining"]
+                value["sku"] if "sku" in value else 'N/A',
+                value["qtyRemaining"] if "qtyRemaining" in value else "N/A"
             ])
     print(f'Sales Report has been written to {csv_file}')   
 # Ensure dates are in YYYY-MM-DD format
@@ -279,9 +280,6 @@ if __name__ == "__main__":
 
     item_tally = defaultdict(lambda: {"qtySold": 0, "total_sales": 0})
     item_ids = []  # Keep track of item ids for bulk retrieval
-    start_time = time.time()
     get_orders()
     print_sales_report()
     write_sales_to_csv()
-    end_time = time.time()
-    print(f"Execution time: {end_time - start_time} seconds")
