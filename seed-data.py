@@ -318,6 +318,10 @@ if __name__ == "__main__":
         environment=os.environ["SQUARE_ENVIRONMENT"],
     )
 
+    if os.environ['SQUARE_ENVIRONMENT'] != "sandbox":
+        print("This script is intended for use with the Square Sandbox environment.")
+        sys.exit(1)
+
     # Use the main location of the account - retrieve_location('yourOtherLocationId') to use a different location
     result = client.locations.retrieve_location('main')
     location_id = result.body["location"]["id"]
