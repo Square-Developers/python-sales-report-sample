@@ -139,14 +139,15 @@ def get_catalog_info_bulk(item_ids):
     try:
         result = client.catalog.batch_retrieve_catalog_objects(body={"object_ids": item_ids})
         if result.is_success():
-            for catalog_object in result.body["objects"]:
-                item_id = catalog_object["id"]
-                item_variation_data = catalog_object.get("item_variation_data", {})
-                sku = item_variation_data.get("sku", "N/A")
-                priceEach = item_variation_data.get("price_money")
-                
-                item_tally[item_id]["sku"] = sku
-                item_tally[item_id]["priceEach"] = priceEach
+            if result.body:
+                for catalog_object in result.body["objects"]:
+                    item_id = catalog_object["id"]
+                    item_variation_data = catalog_object.get("item_variation_data", {})
+                    sku = item_variation_data.get("sku", "N/A")
+                    priceEach = item_variation_data.get("price_money")
+
+                    item_tally[item_id]["sku"] = sku
+                    item_tally[item_id]["priceEach"] = priceEach
 
     except Exception as e:
         handle_error([{"code": "API_ERROR", "detail": str(e)}])
@@ -161,10 +162,11 @@ def get_inventory_counts_bulk(item_ids):
         )
 
         if result.is_success():
-            for inventory_count in result.body["counts"]:
-                item_id = inventory_count["catalog_object_id"]
-                quantity = inventory_count["quantity"]
-                item_tally[item_id]["qtyRemaining"] = quantity
+            if result.body:
+                for inventory_count in result.body["counts"]:
+                    item_id = inventory_count["catalog_object_id"]
+                    quantity = inventory_count["quantity"]
+                    item_tally[item_id]["qtyRemaining"] = quantity
 
     except Exception as e:
         handle_error([{"code": "API_ERROR", "detail": str(e)}])
@@ -220,17 +222,16 @@ def write_sales_to_csv():
                 value["qtyRemaining"] if "qtyRemaining" in value else "N/A"
             ])
     print(f'Sales Report has been written to {csv_file}')   
-# Ensure dates are in YYYY-MM-DD format
+
+# Ensure dates adhere to RFC 3339 format
 def check_date_format(dt):
-    fmt = "%Y-%m-%d"
-
     try:
-        dt = datetime.datetime.strptime(dt, fmt)
+        dt = datetime.datetime.fromisoformat(dt)
     except ValueError:
-        print(dt, ": Invalid date or date format - use YYYY-MM-DD")
+        print(dt, ": Invalid date or date format - use RFC 3339 format")
         exit(1)
-
-    return dt.strftime(fmt)
+    print("Date: ", dt.isoformat())
+    return dt.isoformat()
 
 
 # Error handler
@@ -262,16 +263,18 @@ if __name__ == "__main__":
         description="Generate a sales report for a time period"
     )
     parser.add_argument(
-        "--start-date", required=False, help="Start date for the report, in YYYY-MM-DD format"
+        "--start-date", required=False, help="Start date for the report, in RFC 3339 format"
     )
     parser.add_argument(
-        "--end-date", required=False, help="End date for the report, in YYYY-MM-DD format"
+        "--end-date", required=False, help="End date for the report, in RFC 3339 format"
     )
     args = parser.parse_args()
 
     # If no dates are provided, default to today
     if (not args.start_date or not args.end_date):
-        start_date = end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        current_date = datetime.datetime.now()
+        start_date = current_date.strftime("%Y-%m-%d")
+        end_date = (current_date + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     else:
         start_date = check_date_format(args.start_date)
         end_date = check_date_format(args.end_date)
