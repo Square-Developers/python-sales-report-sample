@@ -20,6 +20,7 @@ from prettytable import PrettyTable
 from collections import defaultdict
 import csv
 
+SEED_DATA_REFERENCE_ID = "SEED_DATA"
 
 # Process all the orders between start_date and end_date
 def get_orders():
@@ -36,6 +37,7 @@ def get_orders():
             "limit": limit,
             "query": {
                 "filter": {
+                    "source_filter": {"source_names": [SEED_DATA_REFERENCE_ID]},
                     "state_filter": {"states": ["COMPLETED"]},
                     "date_time_filter": {
                         "closed_at": {"start_at": start_date, "end_at": end_date}
@@ -108,6 +110,7 @@ def get_orders():
                         "limit": limit,
                         "query": {
                             "filter": {
+                                "source_filter": {"source_names": [SEED_DATA_REFERENCE_ID]},
                                 "state_filter": {"states": ["COMPLETED"]},
                                 "date_time_filter": {
                                     "closed_at": {
