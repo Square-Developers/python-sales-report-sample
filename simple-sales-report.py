@@ -177,7 +177,7 @@ def print_sales_report():
     table = PrettyTable()
 
     # Define table columns
-    table.field_names = ["ID", "Qty Sold", "Total Sales", "Price Currency", "Name", "Variation Name", "SKU", "Qty Remaining"]
+    table.field_names = ["ID", "Qty Sold", "Total Sales", "Currency", "Name", "Variation Name", "SKU", "Qty Remaining"]
     total_sales_sum = 0
     # Add data rows
     for key, value in item_tally.items():
@@ -207,7 +207,7 @@ def write_sales_to_csv():
         writer = csv.writer(file)
 
         # Write header row
-        writer.writerow(["ID", "Qty Sold", "Total Sales", "Price Amount", "Name", "Variation Name", "SKU", "Price Currency", "Qty Remaining"])
+        writer.writerow(["ID", "Qty Sold", "Total Sales", "Currency", "Name", "Variation Name", "SKU", "Qty Remaining"])
 
         # Write data rows
         for key, value in item_tally.items():
