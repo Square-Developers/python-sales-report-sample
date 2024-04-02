@@ -65,8 +65,9 @@ def get_orders():
                                 item_tally.update(
                                     {
                                         item_id: {
+                                            "orderId": order["id"],
                                             "qtySold": int(line_item["quantity"]),
-                                             "total_sales": int(line_item["base_price_money"]["amount"]) * int(line_item["quantity"])
+                                             "orderSalesTotal": int(line_item["base_price_money"]["amount"]) * int(line_item["quantity"])
                                             }
                                         }
                                 )
@@ -81,8 +82,8 @@ def get_orders():
                                             )
                                             + int(line_item["quantity"]),
                                             # Add the total sales to the existing total sales 
-                                            "total_sales": int(
-                                                item_tally[item_id].get("total_sales")) 
+                                            "orderSalesTotal": int(
+                                                item_tally[item_id].get("orderSalesTotal")) 
                                                 + int(line_item["base_price_money"]["amount"]) * int(line_item["quantity"])
 
                                         }
@@ -174,57 +175,47 @@ def get_inventory_counts_bulk(item_ids):
     except Exception as e:
         handle_error([{"code": "API_ERROR", "detail": str(e)}])
 
+# Generate the sales report - Output to the console and a csv file
+def generate_sales_report():
+    # Used for both the table and the csv file
+    header = ["Order ID", "Name", "Variation Name", "Qty Sold", "Order Sales Total", "Currency", "Qty Remaining"]
+    
+    # table setup
+    table = PrettyTable() # create a table
+    table.field_names = header # set the header row
+    total_sales_sum = 0 # keep track of the total sales
 
-# Generate the sales report
-def print_sales_report():
-    table = PrettyTable()
+    # csv setup
+    csv_file = 'sales_report.csv'
 
-    # Define table columns
-    table.field_names = ["ID", "Qty Sold", "Total Sales", "Currency", "Name", "Variation Name", "SKU", "Qty Remaining"]
-    total_sales_sum = 0
-    # Add data rows
-    for key, value in item_tally.items():
-        table.add_row([
-            key,
-            value["qtySold"],
-            "${:,.2f}".format(value["total_sales"] / 100),
-            value["priceEach"]["currency"] if "priceEach" in value else 'N/A',
-            value["name"],
-            value["variation_name"],
-            value["sku"] if "sku" in value else 'N/A',
-            value["qtyRemaining"] if "qtyRemaining" in value else "N/A"
+    # Open the csv file so we can write to it
+    with open(csv_file, 'w', newline='') as file:
+        writer = csv.writer(file)
 
-        ])
-        total_sales_sum += value["total_sales"]
+        # Write header row to the csv file
+        writer.writerow(header)
+        # Add data rows
+        for key, value in item_tally.items():
+            row = [
+                value["orderId"],
+                value["name"],
+                value["variation_name"],
+                value["qtySold"],
+                "${:,.2f}".format(value["orderSalesTotal"] / 100),
+                value["priceEach"]["currency"] if "priceEach" in value else 'N/A',
+                value["qtyRemaining"] if "qtyRemaining" in value else "N/A"
+            ]
+            # write the row to the csv file
+            writer.writerow(row)
+            # add the row to the table
+            table.add_row(row)
+            # add the total sales to the total sales sum
+            total_sales_sum += value["orderSalesTotal"]
 
     # Print the table
     print(table)
     print(f"Total Sales: ${total_sales_sum / 100}")
-
-def write_sales_to_csv():
-    # CSV file path
-    csv_file = 'sales_report.csv'
-
-    # Write data to CSV file
-    with open(csv_file, 'w', newline='') as file:
-        writer = csv.writer(file)
-
-        # Write header row
-        writer.writerow(["ID", "Qty Sold", "Total Sales", "Currency", "Name", "Variation Name", "SKU", "Qty Remaining"])
-
-        # Write data rows
-        for key, value in item_tally.items():
-            writer.writerow([
-                key,
-                value["qtySold"],
-                value["total_sales"],
-                value["priceEach"]["currency"] if "priceEach" in value else 'N/A',
-                value["name"],
-                value["variation_name"],
-                value["sku"] if "sku" in value else 'N/A',
-                value["qtyRemaining"] if "qtyRemaining" in value else "N/A"
-            ])
-    print(f'Sales Report has been written to {csv_file}')   
+    print(f'Sales Report has been written to {csv_file}')
 
 # Ensure dates adhere to RFC 3339 format
 def check_date_format(dt):
@@ -257,7 +248,7 @@ if __name__ == "__main__":
         environment=os.environ["SQUARE_ENVIRONMENT"],
     )
     # Use the main location of the account - retrieve_location('yourOtherLocationId') to use a different location
-    result = client.locations.retrieve_location('main') #os.environ["SQUARE_LOCATION_ID"]
+    result = client.locations.retrieve_location('main')
     location_id = result.body["location"]["id"]
 
 
@@ -284,8 +275,7 @@ if __name__ == "__main__":
         if end_date < start_date:
             print("End date cannot be earlier than start date")
 
-    item_tally = defaultdict(lambda: {"qtySold": 0, "total_sales": 0})
+    item_tally = defaultdict(lambda: {"qtySold": 0, "orderSalesTotal": 0})
     item_ids = []  # Keep track of item ids for bulk retrieval
     get_orders()
-    print_sales_report()
-    write_sales_to_csv()
+    generate_sales_report()

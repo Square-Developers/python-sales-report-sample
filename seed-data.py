@@ -309,8 +309,13 @@ def handle_error(function: str, errors):
 
 
 if __name__ == "__main__":
-    # We don't recommend running this script in a production environment
     load_dotenv()
+
+    # We don't recommend running this script in a production environment
+    if os.environ['SQUARE_ENVIRONMENT'] != "sandbox":
+        print("This script is intended for use with the Square Sandbox environment. Do not run this script in a production environment.")
+        sys.exit(1)
+
     client = Client(
        bearer_auth_credentials=BearerAuthCredentials(
         access_token=os.environ['SQUARE_ACCESS_TOKEN']
@@ -318,9 +323,6 @@ if __name__ == "__main__":
         environment=os.environ["SQUARE_ENVIRONMENT"],
     )
 
-    if os.environ['SQUARE_ENVIRONMENT'] != "sandbox":
-        print("This script is intended for use with the Square Sandbox environment. Do not run this script in a production environment.")
-        sys.exit(1)
 
     # Use the main location of the account - retrieve_location('yourOtherLocationId') to use a different location
     result = client.locations.retrieve_location('main')
