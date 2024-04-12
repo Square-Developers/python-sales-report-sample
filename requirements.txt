@@ -4,7 +4,7 @@ charset-normalizer==3.3.2
 deprecation==2.1.0
 enum34==1.1.10
 Faker==24.4.0
-idna==3.6
+idna==3.7
 jsonpickle==3.0.3
 jsonpointer==2.4
 msgpack==1.0.8
