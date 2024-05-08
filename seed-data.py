@@ -111,7 +111,7 @@ def seed_inventory():
                 "location_id": location_id,
                 "state": "IN_STOCK",
                 "catalog_object_id": x["id"],
-                "occurred_at": datetime.datetime.now(datetime.UTC)
+                "occurred_at": datetime.datetime.now(datetime.timezone.utc)
             },
             "type": "PHYSICAL_COUNT",      
           }
@@ -145,7 +145,7 @@ def seed_orders():
     )
 
     # Create an order for each item, varying the line item quantity for each
-    print("creating " + str(len(result.body["objects"])) + " orders and paying for them...")
+    print("Creating " + str(len(result.body["objects"])) + " orders and paying for them...")
     for x in result.body["objects"]:
         # Increase the number of orders by changing the range value, currently we will create 1 order for every item variation
         for _ in range(0, 1):
@@ -343,6 +343,7 @@ if __name__ == "__main__":
         seed_catalog()
         seed_inventory()
         seed_orders()
+        print("Seed data upload complete.")
     elif args.clear and not args.seed:
         if (input("Are you sure? (y/N): ").lower()) == "y":
             clear_customers()
